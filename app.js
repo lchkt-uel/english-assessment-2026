@@ -636,38 +636,102 @@ function khoiTaoKetQua() {
 }
 
 /* ---------------------------------------------------------
-   8. Pháo giấy chúc mừng (nhẹ, tắt khi giảm chuyển động)
+   8. Pháo giấy + pháo dây chúc mừng (tắt khi giảm chuyển động)
+   Mô phỏng theo thời gian thực (không phụ thuộc tốc độ khung hình) nên mượt trên mọi máy.
    --------------------------------------------------------- */
 function banPhaoGiay() {
   if (GIAM_CHUYEN_DONG) return;
   const cv = $("#phao-giay");
   const ctx = cv.getContext("2d");
   const tl = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = innerWidth * tl; cv.height = innerHeight * tl;
+  const W = innerWidth, H = innerHeight;
+  cv.width = W * tl; cv.height = H * tl;
   ctx.setTransform(tl, 0, 0, tl, 0, 0);
-  const mau = ["#F7931E", "#0A1F44", "#E5BD6A", "#1FB5F2", "#E35A16", "#F2D49B"];
-  const hat = Array.from({ length: innerWidth < 600 ? 90 : 150 }, (_, i) => ({
-    x: innerWidth * (i % 2 ? 0.15 : 0.85) + (Math.random() - 0.5) * 80,
-    y: innerHeight * 0.35,
-    vx: (i % 2 ? 1 : -1) * (2 + Math.random() * 5.5),
-    vy: -(6 + Math.random() * 8),
-    r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
-    w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
-    c: mau[i % mau.length],
-  }));
-  const batDau = performance.now();
+  const mau = ["#F7931E", "#FFB347", "#E5BD6A", "#F2D49B", "#1FB5F2", "#7FD3F7", "#E35A16", "#FFFFFF", "#2B5A93"];
+  const nho = W < 600;
+  const ngauNhien = (a, b) => a + Math.random() * (b - a);
+  const hat = [], day = [];
+
+  // Hai "khẩu pháo" ở hai góc dưới bắn chéo lên giữa màn hình
+  function ban(soHat, soDay, tre) {
+    for (const ben of [-1, 1]) {
+      const gocX = ben < 0 ? W * 0.04 : W * 0.96, gocY = H * 0.98;
+      for (let i = 0; i < soHat; i++) {
+        const goc = (ben < 0 ? -Math.PI / 2 + 0.35 : -Math.PI / 2 - 0.35) + ngauNhien(-0.32, 0.32);
+        const tocDo = ngauNhien(0.9, 1.6) * H * (nho ? 1.25 : 1.05);
+        hat.push({ tre, x: gocX, y: gocY, vx: Math.cos(goc) * tocDo, vy: Math.sin(goc) * tocDo,
+          w: ngauNhien(6, 11), h: ngauNhien(9, 16), xoay: ngauNhien(0, 6.28), vXoay: ngauNhien(-9, 9),
+          lat: ngauNhien(0, 6.28), vLat: ngauNhien(6, 14), lac: ngauNhien(0, 6.28), c: mau[(Math.random() * mau.length) | 0],
+          tron: Math.random() < 0.18 });
+      }
+      for (let i = 0; i < soDay; i++) {
+        const goc = (ben < 0 ? -Math.PI / 2 + 0.3 : -Math.PI / 2 - 0.3) + ngauNhien(-0.28, 0.28);
+        const tocDo = ngauNhien(1.0, 1.5) * H * (nho ? 1.2 : 1.0);
+        day.push({ tre, x: gocX, y: gocY, vx: Math.cos(goc) * tocDo, vy: Math.sin(goc) * tocDo, vet: [],
+          pha: ngauNhien(0, 6.28), tan: ngauNhien(9, 15), bien: ngauNhien(9, 16), day: ngauNhien(2.6, 3.8), dai: ngauNhien(70, 120),
+          c: mau[(Math.random() * mau.length) | 0] });
+      }
+    }
+  }
+  ban(nho ? 90 : 160, nho ? 7 : 11, 0);
+  ban(nho ? 55 : 100, nho ? 4 : 7, 0.35);
+
+  const TONG = 5.2, MO_DAN = 1.4;
+  let truoc = performance.now(), batDau = truoc;
   const ve = (t) => {
-    const troi = t - batDau;
-    ctx.clearRect(0, 0, innerWidth, innerHeight);
-    ctx.globalAlpha = Math.max(0, 1 - Math.max(0, troi - 1900) / 900);
-    hat.forEach((p) => {
-      p.vy += 0.22; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
-      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.r * 2)));
+    const dt = Math.min(0.033, (t - truoc) / 1000); truoc = t;
+    const troi = (t - batDau) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = troi > TONG - MO_DAN ? Math.max(0, (TONG - troi) / MO_DAN) : 1;
+
+    for (const p of hat) {
+      if (troi < p.tre) continue;
+      // lực cản không khí lớn → hạt bay chậm dần rồi lả lướt rơi xuống
+      p.vx *= Math.pow(0.32, dt); p.vy *= Math.pow(0.32, dt);
+      p.vy += H * 0.55 * dt;
+      p.lac += dt * 3;
+      p.x += (p.vx + Math.sin(p.lac) * 28) * dt; p.y += p.vy * dt;
+      p.xoay += p.vXoay * dt; p.lat += p.vLat * dt;
+      if (p.y > H + 30) continue;
+      const lat = Math.cos(p.lat);
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.xoay); ctx.scale(1, lat);
+      ctx.fillStyle = p.c;
+      // mặt sau tối hơn một chút khi giấy lật → cảm giác 3D
+      if (p.tron) { ctx.beginPath(); ctx.arc(0, 0, p.w * 0.45, 0, 6.283); ctx.fill(); }
+      else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      if (lat < 0 && !p.tron) { ctx.fillStyle = "rgba(10, 20, 40, .22)"; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
       ctx.restore();
-    });
-    if (troi < 2800) requestAnimationFrame(ve);
-    else ctx.clearRect(0, 0, innerWidth, innerHeight);
+    }
+
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    for (const d of day) {
+      if (troi < d.tre) continue;
+      d.vx *= Math.pow(0.22, dt); d.vy *= Math.pow(0.22, dt);
+      d.vy += H * 0.26 * dt;
+      d.pha += d.tan * dt;
+      d.x += d.vx * dt; d.y += d.vy * dt;
+      // dây uốn lượn sang hai bên quanh đường bay
+      const lech = Math.sin(d.pha) * d.bien;
+      d.vet.unshift({ x: d.x + lech, y: d.y });
+      // cắt đuôi theo chiều dài thật để dây luôn ngắn, xoăn như dây kim tuyến
+      let dai = 0;
+      for (let i = 1; i < d.vet.length; i++) {
+        dai += Math.hypot(d.vet[i].x - d.vet[i - 1].x, d.vet[i].y - d.vet[i - 1].y);
+        if (dai > d.dai) { d.vet.length = i + 1; break; }
+      }
+      if (d.vet.length > 60) d.vet.length = 60;
+      if (d.vet.length < 3 || d.y > H + 200) continue;
+      ctx.strokeStyle = d.c; ctx.lineWidth = d.day;
+      ctx.beginPath(); ctx.moveTo(d.vet[0].x, d.vet[0].y);
+      for (let i = 1; i < d.vet.length - 1; i++) {
+        const a = d.vet[i], b = d.vet[i + 1];
+        ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      }
+      ctx.stroke();
+    }
+
+    if (troi < TONG) requestAnimationFrame(ve);
+    else { ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H); }
   };
   requestAnimationFrame(ve);
 }
