@@ -496,7 +496,7 @@ h1, h2, h3, .cn-tieu-de, .titan-tieu-de, .kq-ten { text-wrap: balance; }
 .bo-doi {
   position: relative; overflow: hidden; width: 100%; max-width: 480px; margin: 0 auto;
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px;
-  padding: clamp(34px, 6vw, 48px) clamp(12px, 3vw, 26px) clamp(24px, 4vw, 32px);
+  padding: clamp(30px, 5vw, 40px) clamp(12px, 3vw, 26px) clamp(22px, 3.5vw, 28px);
   border-radius: 30px; color: var(--navy-sau);
   background: radial-gradient(120% 90% at 50% 0%, #FFFFFF, #F7F3EC 70%, #EFE7DB);
   border: 1px solid rgba(255, 255, 255, .9);
@@ -508,7 +508,7 @@ h1, h2, h3, .cn-tieu-de, .titan-tieu-de, .kq-ten { text-wrap: balance; }
 .bd-song-br { right: 0; bottom: 0; width: 24%; opacity: .55; }
 .hanh-tinh { position: relative; z-index: 1; margin: 0; display: grid; justify-items: center; gap: 14px; }
 /* Đĩa trắng như huy hiệu: viền kép vàng mảnh, logo lơ lửng nhẹ */
-.ht-khoi { position: relative; width: clamp(112px, 16vw, 168px); aspect-ratio: 1; border-radius: 50%;
+.ht-khoi { position: relative; width: clamp(120px, 18vw, 176px); aspect-ratio: 1; border-radius: 50%;
   background: radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFFFFF 55%, #F6F0E6 100%);
   box-shadow: 0 1px 0 #fff inset, 0 0 0 1px rgba(201, 162, 75, .55), 0 0 0 7px rgba(255, 255, 255, .75), 0 0 0 8px rgba(201, 162, 75, .28),
     0 26px 40px -22px rgba(10, 31, 68, .55);
@@ -521,7 +521,7 @@ h1, h2, h3, .cn-tieu-de, .titan-tieu-de, .kq-ten { text-wrap: balance; }
 @keyframes ht-tho { 0%, 100% { opacity: .65; scale: .94; } 50% { opacity: 1; scale: 1.05; } }
 .ht-logo { position: absolute; inset: 13%; width: 74%; height: 74%; object-fit: contain;
   filter: drop-shadow(0 6px 8px rgba(10, 31, 68, .18)); }
-.ht-titan .ht-logo { inset: 17% 24%; width: 52%; height: 66%; }
+.ht-titan .ht-logo { inset: 14% 20%; width: 60%; height: 72%; }
 .ht-bong { width: 56%; height: 10px; border-radius: 50%; background: radial-gradient(ellipse, rgba(10, 31, 68, .28), transparent 70%); animation: bong-co 6.5s ease-in-out infinite; }
 .ht-titan .ht-bong { animation-delay: -3.2s; }
 @keyframes bong-co { 0%, 100% { transform: scaleX(1); opacity: .9; } 50% { transform: scaleX(.75); opacity: .5; } }
