@@ -476,7 +476,7 @@ function khoiChungNhan(kq, bac, kyNangYeu) {
       ${anChungNhan(bac)}
       <p class="cn-kicker">Xin chúc mừng</p>
       <p class="cn-tieu-de">Bạn được xem xét cấp Giấy chứng nhận bậc <span class="cn-bac-lon">${bac}</span> từ <span class="nw">TITAN English</span></p>
-      <p class="cn-than">Vượt mốc ${moc} điểm là dấu ấn đáng tự hào trên hành trình chinh phục tiếng Anh. Giấy chứng nhận hỗ trợ bạn hoàn thiện tiêu chí <b class="nw">“Hội nhập tốt”</b> và xét danh hiệu <b class="nw">“Sinh viên 5 Tốt”</b>. Vui lòng theo dõi thông báo từ Ban Tổ chức về thủ tục nhận giấy.</p>`;
+      <p class="cn-than">Vượt mốc ${moc} điểm là dấu ấn đáng tự hào trên hành trình chinh phục tiếng Anh. Giấy chứng nhận giúp bạn hoàn thiện tiêu chí <b class="nw">“Hội nhập tốt”</b>, phục vụ xét danh hiệu <b class="nw">“Sinh viên 5 Tốt”</b>. Vui lòng theo dõi thông báo từ Ban Tổ chức về thủ tục nhận giấy.</p>`;
     return;
   }
   const conThieu = moc - kq.tong;
