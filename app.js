@@ -636,8 +636,9 @@ function khoiTaoKetQua() {
 }
 
 /* ---------------------------------------------------------
-   8. Pháo giấy + pháo dây chúc mừng (tắt khi giảm chuyển động)
+   8. Màn chúc mừng: pháo hoa + pháo giấy ánh kim + pháo dây + mưa giấy
    Mô phỏng theo thời gian thực (không phụ thuộc tốc độ khung hình) nên mượt trên mọi máy.
+   Tắt hoàn toàn khi người dùng bật "giảm chuyển động".
    --------------------------------------------------------- */
 function banPhaoGiay() {
   if (GIAM_CHUYEN_DONG) return;
@@ -648,45 +649,90 @@ function banPhaoGiay() {
   cv.width = W * tl; cv.height = H * tl;
   ctx.setTransform(tl, 0, 0, tl, 0, 0);
   const mau = ["#F7931E", "#FFB347", "#E5BD6A", "#F2D49B", "#1FB5F2", "#7FD3F7", "#E35A16", "#FFFFFF", "#2B5A93"];
+  const mauLua = ["#FFF6D8", "#FFD27A", "#F7931E", "#FFFFFF", "#9FE3FF"];
   const nho = W < 600;
-  const ngauNhien = (a, b) => a + Math.random() * (b - a);
-  const hat = [], day = [];
+  const R = (a, b) => a + Math.random() * (b - a);
+  const chon = (ds) => ds[(Math.random() * ds.length) | 0];
+  const hat = [], day = [], lua = [], no = [];
 
-  // Hai "khẩu pháo" ở hai góc dưới bắn chéo lên giữa màn hình
+  const taoHat = (tre, x, y, vx, vy) => hat.push({ tre, x, y, vx, vy,
+    w: R(6, 11), h: R(9, 16), xoay: R(0, 6.28), vXoay: R(-9, 9), lat: R(0, 6.28), vLat: R(6, 14),
+    lac: R(0, 6.28), c: chon(mau), tron: Math.random() < 0.15, kim: Math.random() < 0.35 });
+
+  // 1) Hai khẩu pháo ở hai góc dưới bắn chéo lên giữa màn hình
   function ban(soHat, soDay, tre) {
     for (const ben of [-1, 1]) {
-      const gocX = ben < 0 ? W * 0.04 : W * 0.96, gocY = H * 0.98;
+      const gx = ben < 0 ? W * 0.04 : W * 0.96, gy = H * 0.98;
       for (let i = 0; i < soHat; i++) {
-        const goc = (ben < 0 ? -Math.PI / 2 + 0.35 : -Math.PI / 2 - 0.35) + ngauNhien(-0.32, 0.32);
-        const tocDo = ngauNhien(0.9, 1.6) * H * (nho ? 1.25 : 1.05);
-        hat.push({ tre, x: gocX, y: gocY, vx: Math.cos(goc) * tocDo, vy: Math.sin(goc) * tocDo,
-          w: ngauNhien(6, 11), h: ngauNhien(9, 16), xoay: ngauNhien(0, 6.28), vXoay: ngauNhien(-9, 9),
-          lat: ngauNhien(0, 6.28), vLat: ngauNhien(6, 14), lac: ngauNhien(0, 6.28), c: mau[(Math.random() * mau.length) | 0],
-          tron: Math.random() < 0.18 });
+        const g = -Math.PI / 2 - ben * 0.35 + R(-0.32, 0.32), v = R(0.9, 1.6) * H * (nho ? 1.25 : 1.05);
+        taoHat(tre, gx, gy, Math.cos(g) * v, Math.sin(g) * v);
       }
       for (let i = 0; i < soDay; i++) {
-        const goc = (ben < 0 ? -Math.PI / 2 + 0.3 : -Math.PI / 2 - 0.3) + ngauNhien(-0.28, 0.28);
-        const tocDo = ngauNhien(1.0, 1.5) * H * (nho ? 1.2 : 1.0);
-        day.push({ tre, x: gocX, y: gocY, vx: Math.cos(goc) * tocDo, vy: Math.sin(goc) * tocDo, vet: [],
-          pha: ngauNhien(0, 6.28), tan: ngauNhien(9, 15), bien: ngauNhien(9, 16), day: ngauNhien(2.6, 3.8), dai: ngauNhien(70, 120),
-          c: mau[(Math.random() * mau.length) | 0] });
+        const g = -Math.PI / 2 - ben * 0.3 + R(-0.28, 0.28), v = R(1.0, 1.5) * H * (nho ? 1.2 : 1.0);
+        day.push({ tre, x: gx, y: gy, vx: Math.cos(g) * v, vy: Math.sin(g) * v, vet: [],
+          pha: R(0, 6.28), tan: R(9, 15), bien: R(9, 16), day: R(2.6, 3.8), dai: R(70, 120), c: chon(mau) });
       }
     }
   }
   ban(nho ? 90 : 160, nho ? 7 : 11, 0);
   ban(nho ? 55 : 100, nho ? 4 : 7, 0.35);
 
-  const TONG = 5.2, MO_DAN = 1.4;
-  let truoc = performance.now(), batDau = truoc;
+  // 2) Pháo hoa ánh vàng nổ trên cao: tia lửa có đuôi, lấp lánh
+  function phaoHoa(x, y, tre, soTia) {
+    no.push({ x, y, tre });
+    for (let i = 0; i < soTia; i++) {
+      const g = (i / soTia) * 6.283 + R(-0.08, 0.08), v = R(0.45, 1) * Math.min(W, H) * (nho ? 0.7 : 0.55);
+      lua.push({ tre, x, y, px: x, py: y, vx: Math.cos(g) * v, vy: Math.sin(g) * v,
+        song: R(1.3, 2.1), c: chon(mauLua), nhay: R(0, 6.28), r: R(1.8, 3) });
+    }
+  }
+  phaoHoa(W * 0.28, H * 0.26, 0.2, nho ? 60 : 90);
+  phaoHoa(W * 0.72, H * 0.22, 0.55, nho ? 60 : 90);
+  phaoHoa(W * 0.5, H * 0.16, 0.95, nho ? 70 : 110);
+
+  // 3) Mưa giấy nhẹ từ trên rơi xuống sau cao trào
+  for (let i = 0; i < (nho ? 70 : 130); i++) taoHat(R(1.0, 2.2), R(0, W), R(-60, -10), R(-40, 40), R(40, 120));
+
+  const TONG = 6.2, MO_DAN = 1.5;
+  let truoc = performance.now();
+  const batDau = truoc;
   const ve = (t) => {
     const dt = Math.min(0.033, (t - truoc) / 1000); truoc = t;
     const troi = (t - batDau) / 1000;
+    const mo = troi > TONG - MO_DAN ? Math.max(0, (TONG - troi) / MO_DAN) : 1;
     ctx.clearRect(0, 0, W, H);
-    ctx.globalAlpha = troi > TONG - MO_DAN ? Math.max(0, (TONG - troi) / MO_DAN) : 1;
 
+    // chớp sáng ngắn ở tâm mỗi quả pháo hoa
+    ctx.globalCompositeOperation = "lighter";
+    for (const n of no) {
+      const k = troi - n.tre;
+      if (k < 0 || k > 0.45) continue;
+      const a = (1 - k / 0.45) * 0.55 * mo, r = 30 + k * 260;
+      const gr = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r);
+      gr.addColorStop(0, `rgba(255, 236, 190, ${a})`); gr.addColorStop(1, "rgba(255, 180, 80, 0)");
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.283); ctx.fill();
+    }
+    // tia lửa pháo hoa
+    ctx.lineCap = "round";
+    for (const l of lua) {
+      const k = troi - l.tre;
+      if (k < 0 || k > l.song) continue;
+      l.px = l.x; l.py = l.y;
+      l.vx *= Math.pow(0.12, dt); l.vy *= Math.pow(0.12, dt); l.vy += H * 0.18 * dt;
+      l.x += l.vx * dt; l.y += l.vy * dt;
+      const con = 1 - k / l.song;
+      const a = con * (0.65 + 0.35 * Math.sin(troi * 38 + l.nhay)) * mo;
+      ctx.globalAlpha = Math.max(0, a);
+      ctx.strokeStyle = l.c; ctx.lineWidth = l.r;
+      ctx.beginPath(); ctx.moveTo(l.px - (l.x - l.px) * 3, l.py - (l.y - l.py) * 3); ctx.lineTo(l.x, l.y); ctx.stroke();
+      ctx.fillStyle = l.c; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.9, 0, 6.283); ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = mo;
+
+    // pháo giấy (giấy màu + giấy ánh kim lóe sáng khi lật)
     for (const p of hat) {
       if (troi < p.tre) continue;
-      // lực cản không khí lớn → hạt bay chậm dần rồi lả lướt rơi xuống
       p.vx *= Math.pow(0.32, dt); p.vy *= Math.pow(0.32, dt);
       p.vy += H * 0.55 * dt;
       p.lac += dt * 3;
@@ -696,24 +742,24 @@ function banPhaoGiay() {
       const lat = Math.cos(p.lat);
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.xoay); ctx.scale(1, lat);
       ctx.fillStyle = p.c;
-      // mặt sau tối hơn một chút khi giấy lật → cảm giác 3D
       if (p.tron) { ctx.beginPath(); ctx.arc(0, 0, p.w * 0.45, 0, 6.283); ctx.fill(); }
-      else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      if (lat < 0 && !p.tron) { ctx.fillStyle = "rgba(10, 20, 40, .22)"; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+      else {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        if (lat < 0) { ctx.fillStyle = "rgba(10, 20, 40, .22)"; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+        else if (p.kim) { ctx.fillStyle = `rgba(255, 255, 255, ${Math.pow(lat, 6) * 0.75})`; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+      }
       ctx.restore();
     }
 
-    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    // pháo dây kim tuyến xoăn
+    ctx.lineJoin = "round";
     for (const d of day) {
       if (troi < d.tre) continue;
       d.vx *= Math.pow(0.22, dt); d.vy *= Math.pow(0.22, dt);
       d.vy += H * 0.26 * dt;
       d.pha += d.tan * dt;
       d.x += d.vx * dt; d.y += d.vy * dt;
-      // dây uốn lượn sang hai bên quanh đường bay
-      const lech = Math.sin(d.pha) * d.bien;
-      d.vet.unshift({ x: d.x + lech, y: d.y });
-      // cắt đuôi theo chiều dài thật để dây luôn ngắn, xoăn như dây kim tuyến
+      d.vet.unshift({ x: d.x + Math.sin(d.pha) * d.bien, y: d.y });
       let dai = 0;
       for (let i = 1; i < d.vet.length; i++) {
         dai += Math.hypot(d.vet[i].x - d.vet[i - 1].x, d.vet[i].y - d.vet[i - 1].y);
