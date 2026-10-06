@@ -492,48 +492,33 @@ h1, h2, h3, .cn-tieu-de, .titan-tieu-de, .kq-ten { text-wrap: balance; }
 .tof-mui-ten { position: absolute; top: 14px; right: 14px; width: 16px; height: 16px; opacity: .8; transition: transform .3s ease; }
 .titan-o-fanpage:hover .tof-mui-ten { transform: translate(2px, -2px); }
 
-/* Cụm "tinh cầu": logo tách nền, lơ lửng, có vành quỹ đạo 3D và mặt trăng bay quanh */
-.bo-doi {
-  position: relative; overflow: hidden; width: 100%; max-width: 480px; margin: 0 auto;
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px;
-  padding: clamp(30px, 5vw, 40px) clamp(12px, 3vw, 26px) clamp(22px, 3.5vw, 28px);
-  border-radius: 30px; color: var(--navy-sau);
-  background: radial-gradient(120% 90% at 50% 0%, #FFFFFF, #F7F3EC 70%, #EFE7DB);
-  border: 1px solid rgba(255, 255, 255, .9);
-  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(201, 162, 75, .25), 0 40px 70px -36px rgba(0, 0, 0, .85);
-}
-.bo-doi::after { content: ""; position: absolute; inset: 10px; border: 1px solid rgba(201, 162, 75, .35); border-radius: 22px; pointer-events: none; }
-.bd-song { position: absolute; pointer-events: none; opacity: .7; }
-.bd-song-tl { top: 0; left: 0; width: 46%; }
-.bd-song-br { right: 0; bottom: 0; width: 24%; opacity: .55; }
-.hanh-tinh { position: relative; z-index: 1; margin: 0; display: grid; justify-items: center; gap: 14px; }
-/* Đĩa trắng như huy hiệu: viền kép vàng mảnh, logo lơ lửng nhẹ */
-.ht-khoi { position: relative; width: clamp(120px, 18vw, 176px); aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFFFFF 55%, #F6F0E6 100%);
-  box-shadow: 0 1px 0 #fff inset, 0 0 0 1px rgba(201, 162, 75, .55), 0 0 0 7px rgba(255, 255, 255, .75), 0 0 0 8px rgba(201, 162, 75, .28),
-    0 26px 40px -22px rgba(10, 31, 68, .55);
-  animation: bong-benh 6.5s ease-in-out infinite; }
-.ht-titan .ht-khoi { animation-delay: -3.2s; }
-@keyframes bong-benh { 0%, 100% { transform: translateY(3px); } 50% { transform: translateY(-7px); } }
-.ht-hao-quang { position: absolute; inset: -26%; border-radius: 50%; z-index: -1;
-  background: radial-gradient(circle, rgba(31, 181, 242, .30), rgba(31, 181, 242, .07) 48%, transparent 70%); animation: ht-tho 5s ease-in-out infinite; }
-.ht-titan .ht-hao-quang { background: radial-gradient(circle, rgba(247, 147, 30, .34), rgba(247, 147, 30, .07) 48%, transparent 70%); animation-delay: -2.5s; }
-@keyframes ht-tho { 0%, 100% { opacity: .65; scale: .94; } 50% { opacity: 1; scale: 1.05; } }
-.ht-logo { position: absolute; inset: 13%; width: 74%; height: 74%; object-fit: contain;
-  filter: drop-shadow(0 6px 8px rgba(10, 31, 68, .18)); }
-.ht-titan .ht-logo { inset: 14% 20%; width: 60%; height: 72%; }
-.ht-bong { width: 56%; height: 10px; border-radius: 50%; background: radial-gradient(ellipse, rgba(10, 31, 68, .28), transparent 70%); animation: bong-co 6.5s ease-in-out infinite; }
-.ht-titan .ht-bong { animation-delay: -3.2s; }
-@keyframes bong-co { 0%, 100% { transform: scaleX(1); opacity: .9; } 50% { transform: scaleX(.75); opacity: .5; } }
-/* Dấu nối "×" vàng mảnh giữa hai đơn vị */
-.bd-ket { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-top: -24px; }
-.bd-ket i { width: clamp(12px, 3vw, 28px); height: 1px; background: linear-gradient(90deg, transparent, var(--vang)); }
-.bd-ket i:last-child { transform: scaleX(-1); }
-.bd-ket b { font-family: var(--font-sang); font-weight: 400; font-size: 1.7rem; line-height: 1; color: var(--vang); }
-/* xuất hiện: hai tinh cầu trôi vào từ hai phía */
-.hanh-tinh { transition: translate 1.3s cubic-bezier(.2, .8, .2, 1) .15s, opacity 1s ease .15s, filter 1.2s ease .15s; }
-html.js .titan:not(.da-hien) .ht-lch { translate: -60px 0; opacity: 0; filter: blur(10px); }
-html.js .titan:not(.da-hien) .ht-titan { translate: 60px 0; opacity: 0; filter: blur(10px); }
+/* Cụm logo: hai viên kim cương lồng vào nhau (lấy cảm hứng từ hình thoi TITAN) */
+.bo-doi { position: relative; width: 100%; max-width: 500px; margin: 0 auto; aspect-ratio: 16 / 10; isolation: isolate; }
+.bo-doi::before { content: ""; position: absolute; inset: 8% 4%; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(247, 147, 30, .35), rgba(31, 181, 242, .12) 60%, transparent); filter: blur(18px); }
+.kc { position: absolute; top: 50%; width: 38%; aspect-ratio: 1; translate: -50% -50%;
+  transition: translate 1.2s cubic-bezier(.2, .8, .2, 1), opacity 1s ease, scale .5s ease; }
+.kc::before { content: ""; position: absolute; inset: 0; border-radius: 18%; rotate: 45deg; }
+.kc img { position: absolute; left: 50%; top: 50%; translate: -50% -50%; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(10, 31, 68, .22)); }
+.kc-lch { left: 31%; z-index: 1; }
+.kc-lch::before { background: linear-gradient(145deg, #FFFFFF 0%, #F4EFE6 100%);
+  box-shadow: 0 0 0 2px rgba(201, 162, 75, .9), 0 0 0 8px rgba(255, 255, 255, .08), 0 30px 50px -20px rgba(0, 0, 0, .7); }
+.kc-lch img { width: 64%; height: 64%; translate: -62% -50%; }
+.kc-titan { left: 69%; z-index: 2; }
+.kc-titan::before { background: linear-gradient(145deg, #1B2C55 0%, #0B1838 100%);
+  box-shadow: 0 0 0 2px #F07A2A, 0 0 0 8px rgba(240, 122, 42, .12), 0 30px 50px -20px rgba(0, 0, 0, .8), inset 0 0 40px rgba(240, 122, 42, .25); }
+.kc-titan img { width: 56%; height: 66%; translate: -38% -50%; filter: drop-shadow(0 0 16px rgba(240, 122, 42, .45)); }
+/* dấu nối vàng nằm đúng chỗ hai viên chạm nhau */
+.kc-noi { position: absolute; left: 50%; top: 50%; z-index: 3; translate: -50% -50%; width: 13%; aspect-ratio: 1; display: grid; place-items: center;
+  border-radius: 50%; font-family: var(--font-sang); font-size: clamp(1rem, 3.4vw, 1.5rem); line-height: 1; color: #0B1838;
+  background: radial-gradient(circle at 35% 30%, #FFF3D1, #E2B65A 55%, #A8792A); box-shadow: 0 0 0 3px #0B1838, 0 0 22px rgba(226, 182, 90, .7);
+  transition: opacity .8s ease .9s, scale .8s cubic-bezier(.3, 1.6, .5, 1) .9s; }
+.bo-doi:hover .kc-lch { translate: -54% -50%; }
+.bo-doi:hover .kc-titan { translate: -46% -50%; }
+/* xuất hiện: hai viên trượt vào từ hai phía rồi khớp lại */
+html.js .titan:not(.da-hien) .kc-lch { translate: -110% -50%; opacity: 0; }
+html.js .titan:not(.da-hien) .kc-titan { translate: 10% -50%; opacity: 0; }
+html.js .titan:not(.da-hien) .kc-noi { opacity: 0; scale: .3; }
 .titan-logo-khung { display: inline-block; padding: 12px 16px; background: #fff; border-radius: 20px; box-shadow: 0 18px 30px -18px rgba(0, 0, 0, .7); }
 .titan-logo-khung img { width: 120px; height: auto; }
 .titan-tieu-de { margin: 12px 0 12px; font-family: var(--font-sang); font-weight: 800; font-size: clamp(1.8rem, 4.6vw, 2.6rem); line-height: 1.15; }
@@ -745,7 +730,6 @@ html.js .ket-qua:not(.da-hien) .kq-the { opacity: 0; filter: blur(18px); transfo
   .tam { border-radius: 30px 30px 0 0; }
   .the { padding: 24px 20px; }
   .titan-nut .nut { flex: 1 1 100%; }
-  .bd-ket { margin-top: -22px; }
   .titan-o-fanpage { width: 126px; }
   .cn-dat { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .an-chung-nhan { grid-row: auto; }
@@ -791,7 +775,9 @@ html.js .ket-qua:not(.da-hien) .kq-the { opacity: 0; filter: blur(18px); transfo
   html { scroll-behavior: auto; }
   html.js body:not(.da-mo) [data-hien], html.js [data-cuon]:not(.da-hien), html.js .ket-qua:not(.da-hien) [data-kq], html.js .ket-qua:not(.da-hien) .kq-the { opacity: 1; filter: none; transform: none; }
   html.js body:not(.da-mo) .nen-anh { filter: blur(5px); transform: scale(1.06); }
-  html.js .titan:not(.da-hien) .hanh-tinh { translate: none; opacity: 1; filter: none; }
+  html.js .titan:not(.da-hien) .kc { translate: -50% -50%; opacity: 1; }
+  html.js .titan:not(.da-hien) .kc-noi { opacity: 1; scale: 1; }
+  .kc, .kc-noi { transition: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   .dt-vien { animation: none; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
