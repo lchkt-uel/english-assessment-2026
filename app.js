@@ -3,8 +3,7 @@
    ========================================================= */
 const CAU_HINH = {
   // Link Google Apps Script dạng https://script.google.com/macros/s/..../exec
-  // Để trống "" = CHẾ ĐỘ XEM THỬ (dữ liệu giả, không gọi máy chủ).
-  API_URL: "",
+  API_URL: "https://script.google.com/macros/s/AKfycbzZgxbcIgKavaOIoCWzJqP1hX7wquq7IIQesomNTc1IvKRQ8wPH5eDH2_HllVTh2LH6hQ/exec",
 
   // Mốc điểm được xét cấp Giấy chứng nhận
   MOC_CHUNG_NHAN: 550,
@@ -43,7 +42,6 @@ const CAU_HINH = {
 const $ = (s, goc = document) => goc.querySelector(s);
 const $$ = (s, goc = document) => Array.from(goc.querySelectorAll(s));
 const GIAM_CHUYEN_DONG = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const CHE_DO_THU = !CAU_HINH.API_URL.trim();
 const DIEM_TOI_DA = 990;
 const DIEM_KY_NANG = 495;
 const SO_LAN_SAI_TOI_DA = 5;
@@ -257,65 +255,13 @@ function khoiTaoCaptcha() {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(veCaptcha);
   let hen;
   window.addEventListener("resize", () => { clearTimeout(hen); hen = setTimeout(veCaptcha, 200); });
-  if (CHE_DO_THU) window.__EA_DEMO = { maXacNhan: () => maXacNhan }; // chỉ để kiểm thử ở chế độ xem thử
-}
-
-/* ---------------------------------------------------------
-   4. Chế độ xem thử (dữ liệu GIẢ, chỉ dùng khi API_URL trống)
-   --------------------------------------------------------- */
-const DEMO = [
-  { email: "demo.baoanh@st.uel.edu.vn", moTa: "795 điểm · đủ điều kiện B2", nhan: "≥ 550",
-    data: { msv: "K249990001", hoTen: "  Nguyễn Ngọc   Bảo Anh ", nghe: 420, doc: 375, tong: 795, ngheCau: 86, docCau: 78 } },
-  { email: "demo.giahuy@st.uel.edu.vn", moTa: "485 điểm · còn 65 điểm", nhan: "< 550",
-    data: { msv: "K249990002", hoTen: "Trần Gia Huy", nghe: 270, doc: 215, tong: 485, ngheCau: 58, docCau: 47 } },
-  { email: "demo.thaovy@st.uel.edu.vn", moTa: "Không có số câu đúng", nhan: "Thiếu câu",
-    data: { msv: "K249990003", hoTen: "Lê Thảo Vy", nghe: 300, doc: 330, ngheCau: null, docCau: null } },
-];
-const demoSai = {}; // { MSSV: { sai, khoaDen } }
-
-function goiDemo(msv, email) {
-  return new Promise((xong) => {
-    setTimeout(() => {
-      if (email === "loi500@demo.vn") return xong({ ok: false, loi: "LOI_MAY_CHU" }); // email ẩn để thử lỗi máy chủ
-      const tt = demoSai[msv] || (demoSai[msv] = { sai: 0, khoaDen: 0 });
-      const bayGio = Date.now();
-      if (tt.khoaDen > bayGio) return xong({ ok: false, loi: "KHOA", phut: Math.ceil((tt.khoaDen - bayGio) / 60000) });
-      if (tt.khoaDen && tt.khoaDen <= bayGio) { tt.sai = 0; tt.khoaDen = 0; }
-      const sv = DEMO.find((d) => d.data.msv === msv && d.email === email);
-      if (sv) { tt.sai = 0; return xong({ ok: true, data: { ...sv.data } }); }
-      tt.sai += 1;
-      if (tt.sai >= SO_LAN_SAI_TOI_DA) { tt.khoaDen = bayGio + 5 * 60000; return xong({ ok: false, loi: "KHOA", phut: 5 }); }
-      xong({ ok: false, loi: "SAI", conLai: SO_LAN_SAI_TOI_DA - tt.sai });
-    }, 1100);
-  });
-}
-
-function khoiTaoDemo() {
-  if (!CHE_DO_THU) return;
-  $("#bang-demo").hidden = false;
-  $("#ds-demo").innerHTML = DEMO.map((d, i) => `
-    <button type="button" class="nut-demo" data-demo="${i}" title="${d.data.msv} · ${d.email}">
-      <span class="nut-demo-ma">Mẫu ${i + 1}</span>
-      <span class="nut-demo-mo-ta">${thoat(d.moTa)}</span>
-      <span class="nut-demo-the">${thoat(d.nhan)}</span>
-    </button>`).join("");
-  $("#ds-demo").addEventListener("click", (e) => {
-    const nut = e.target.closest("[data-demo]");
-    if (!nut) return;
-    const d = DEMO[+nut.dataset.demo];
-    $("#msv").value = d.data.msv;
-    $("#email").value = d.email;
-    xoaThongBao();
-    $("#xac-nhan").focus();
-  });
-  console.info("[English Assessment] Đang ở CHẾ ĐỘ XEM THỬ – điền CAU_HINH.API_URL để dùng dữ liệu thật.");
 }
 
 /* ---------------------------------------------------------
    5. Gọi máy chủ (Google Apps Script)
    --------------------------------------------------------- */
 async function goiApi(msv, email) {
-  if (CHE_DO_THU) return goiDemo(msv, email);
+  if (!CAU_HINH.API_URL.trim()) return { ok: false, loi: "LOI_MAY_CHU" };
   if (navigator.onLine === false) return { ok: false, loi: "MANG" };
   const dieuKhien = new AbortController();
   const hetGio = setTimeout(() => dieuKhien.abort(), CAU_HINH.THOI_GIAN_CHO);
@@ -846,7 +792,6 @@ async function khoiTaoVideo() {
 khoiTaoLogo();
 khoiTaoLienKet();
 khoiTaoCaptcha();
-khoiTaoDemo();
 khoiTaoForm();
 khoiTaoKetQua();
 khoiTaoHeader();
