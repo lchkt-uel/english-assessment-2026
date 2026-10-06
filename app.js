@@ -475,8 +475,8 @@ function khoiChungNhan(kq, bac, kyNangYeu) {
     hop.innerHTML = `
       ${anChungNhan(bac)}
       <p class="cn-kicker">Xin chúc mừng</p>
-      <p class="cn-tieu-de">Bạn đủ điều kiện xét cấp Giấy chứng nhận bậc <span class="cn-bac-lon">${bac}</span> từ <span class="nw">TITAN English</span></p>
-      <p class="cn-than">Vượt mốc ${moc} điểm là dấu ấn đáng tự hào trên hành trình chinh phục tiếng Anh, đồng thời góp phần hoàn thiện tiêu chí <b class="nw">“Hội nhập tốt”</b> và danh hiệu <b class="nw">“Sinh viên 5 Tốt”</b>. Vui lòng theo dõi thông báo từ Ban Tổ chức về thủ tục nhận giấy.</p>`;
+      <p class="cn-tieu-de">Bạn thuộc diện được xem xét cấp Giấy chứng nhận đạt trình độ ngoại ngữ bậc <span class="cn-bac-lon">${bac}</span> từ <span class="nw">Trung tâm Anh ngữ Titan</span></p>
+      <p class="cn-than">Vượt mốc ${moc} điểm là dấu ấn đáng tự hào trên hành trình chinh phục tiếng Anh. Giấy chứng nhận (bậc tương ứng với số điểm) nhằm hỗ trợ bạn hoàn thiện tiêu chí <b class="nw">“Hội nhập tốt”</b> và phục vụ công tác xét danh hiệu <b class="nw">“Sinh viên 5 Tốt”</b> các cấp. Vui lòng theo dõi thông báo từ Ban Tổ chức về thủ tục nhận giấy.</p>`;
     return;
   }
   const conThieu = moc - kq.tong;
@@ -495,7 +495,7 @@ function khoiChungNhan(kq, bac, kyNangYeu) {
         <p class="cn-tieu-de">Còn <span class="nw">${conThieu} điểm</span> nữa để chạm mốc ${moc}</p>
       </div>
     </div>
-    <p class="cn-than">${loi} Khi đạt từ <span class="nw">${moc} điểm</span>, bạn sẽ được xem xét cấp Giấy chứng nhận bậc B1 trở lên từ <span class="nw">TITAN English</span>.</p>
+    <p class="cn-than">${loi} Khi đạt từ <span class="nw">${moc} điểm</span>, bạn sẽ được xem xét cấp Giấy chứng nhận đạt trình độ ngoại ngữ bậc B1 trở lên từ <span class="nw">Trung tâm Anh ngữ Titan</span>.</p>
     <div class="cn-tien-do">
       <div class="cn-thanh" role="img" aria-label="Đã đạt ${Math.round((kq.tong / moc) * 100)}% chặng đường đến mốc ${moc} điểm"><span></span></div>
       <div class="cn-thanh-nhan"><span>Bạn: ${kq.tong}</span><span>Mốc: ${moc}</span></div>
