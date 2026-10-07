@@ -905,6 +905,23 @@ async function khoiTaoVideo() {
 }
 
 /* ---------------------------------------------------------
+   Đếm lượt truy cập (ghi vào trang "ThongKe" của Google Sheet, không thu thập thông tin cá nhân)
+   --------------------------------------------------------- */
+function demLuotXem() {
+  const url = CAU_HINH.API_URL.trim();
+  if (!url || navigator.webdriver) return;
+  let moi = "0", ngay = "0";
+  try {
+    const homNay = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" });
+    if (!localStorage.getItem("ea-da-ghe")) { localStorage.setItem("ea-da-ghe", "1"); moi = "1"; }
+    if (localStorage.getItem("ea-ngay-ghe") !== homNay) { localStorage.setItem("ea-ngay-ghe", homNay); ngay = "1"; }
+  } catch (e) { /* trình duyệt chặn bộ nhớ: vẫn đếm lượt xem */ }
+  setTimeout(() => {
+    fetch(`${url}?ping=1&moi=${moi}&ngay=${ngay}`, { mode: "no-cors", keepalive: true }).catch(() => {});
+  }, 1500);
+}
+
+/* ---------------------------------------------------------
    Thông báo "chưa có điểm" + tài khoản mẫu
    --------------------------------------------------------- */
 function khoiTaoTaiKhoanMau() {
@@ -946,3 +963,4 @@ khoiTaoDenRoi();
 khoiTaoVideo();
 moManDau();
 khoiTaoTaiKhoanMau();
+demLuotXem();
