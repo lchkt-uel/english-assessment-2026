@@ -978,7 +978,26 @@ function khoiTaoTaiKhoanMau() {
     oMa.scrollIntoView({ behavior: GIAM_CHUYEN_DONG ? "auto" : "smooth", block: "center" });
     setTimeout(() => oMa.focus({ preventScroll: true }), GIAM_CHUYEN_DONG ? 0 : 450);
   });
-  if (!daDong) setTimeout(() => { if (!hop.open) hop.showModal(); }, GIAM_CHUYEN_DONG ? 0 : 1400);
+  if (daDong) return;
+  // Chỉ hiện sau khi trang tải xong VÀ hiệu ứng mở màn đã chạy hết, để không cắt ngang trải nghiệm
+  const taiXong = document.readyState === "complete" ? Promise.resolve()
+    : new Promise((x) => window.addEventListener("load", x, { once: true }));
+  const moXong = new Promise((x) => {
+    if (document.body.classList.contains("da-mo")) return x();
+    const theoDoi = new MutationObserver(() => {
+      if (document.body.classList.contains("da-mo")) { theoDoi.disconnect(); x(); }
+    });
+    theoDoi.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  });
+  const anToan = new Promise((x) => setTimeout(x, 9000));   // mạng chậm: tối đa 9 giây
+  Promise.race([Promise.all([taiXong, moXong]), anToan]).then(() => {
+    setTimeout(() => {
+      // người dùng đang gõ vào form hoặc đã xem kết quả thì thôi, không làm phiền
+      const dangGo = document.activeElement && document.activeElement.closest && document.activeElement.closest("form");
+      if (hop.open || dangGo || !$("#ket-qua").hidden) return;
+      hop.showModal();
+    }, GIAM_CHUYEN_DONG ? 0 : 2300);   // ≈ thời gian các khối mở màn hiện xong
+  });
 }
 
 /* ---------------------------------------------------------
