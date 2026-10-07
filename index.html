@@ -26,9 +26,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..900;1,500..800&family=Playfair+Display:ital,wght@0,600..900;1,500..800&display=swap">
-  <link rel="stylesheet" href="style.css?v=20261006f">
+  <link rel="stylesheet" href="style.css?v=20261007a">
   <script>document.documentElement.classList.add("js")</script>
-  <script src="app.js?v=20261006f" defer></script>
+  <script src="app.js?v=20261007a" defer></script>
 </head>
 <body class="che-do-tra-cuu">
   <a class="bo-qua" href="#popup">Bỏ qua, đến ô tra cứu</a>
@@ -357,6 +357,20 @@
   </main>
 
   <canvas class="phao-giay" id="phao-giay" aria-hidden="true"></canvas>
+  <dialog class="tb-mau" id="tb-mau" aria-labelledby="tb-mau-tieu-de" aria-describedby="tb-mau-mo-ta">
+    <button type="button" class="tb-mau-dong" data-dong-mau aria-label="Đóng thông báo"><span aria-hidden="true">×</span></button>
+    <p class="tb-mau-nhan">Thông báo</p>
+    <h2 class="tb-mau-tieu-de" id="tb-mau-tieu-de">Kết quả đang được tổng hợp</h2>
+    <p class="tb-mau-mo-ta" id="tb-mau-mo-ta">Ban Tổ chức sẽ công bố điểm English Assessment 2026 trong thời gian tới. Trong lúc chờ, bạn có thể dùng tài khoản mẫu bên dưới để trải nghiệm trang tra cứu.</p>
+    <dl class="tb-mau-the">
+      <div><dt>MSSV</dt><dd id="tb-mau-msv"></dd></div>
+      <div><dt>Email</dt><dd id="tb-mau-email"></dd></div>
+    </dl>
+    <div class="tb-mau-nut">
+      <button type="button" class="tb-mau-chinh" id="tb-mau-dung" autofocus>Dùng tài khoản mẫu</button>
+      <button type="button" class="tb-mau-phu" data-dong-mau>Để sau</button>
+    </div>
+  </dialog>
 
   <!-- ===== BỘ ICON (vẽ bằng SVG, không phải logo) ===== -->
   <svg class="kho-icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

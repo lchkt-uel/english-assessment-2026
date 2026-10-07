@@ -34,6 +34,14 @@ const CAU_HINH = {
 
   // Thời gian chờ máy chủ tối đa (mili giây)
   THOI_GIAN_CHO: 20000,
+
+  // Thông báo "chưa có điểm" khi mở trang + tài khoản mẫu để trải nghiệm.
+  // Khi đã công bố điểm thật: đổi BAT thành false (và xóa dòng mẫu trong Google Sheet).
+  TAI_KHOAN_MAU: {
+    BAT: true,
+    MSSV: "K244000000",
+    EMAIL: "anvnk26400a@st.uel.edu.vn",
+  },
 };
 
 /* =========================================================
@@ -897,6 +905,33 @@ async function khoiTaoVideo() {
 }
 
 /* ---------------------------------------------------------
+   Thông báo "chưa có điểm" + tài khoản mẫu
+   --------------------------------------------------------- */
+function khoiTaoTaiKhoanMau() {
+  const cfg = CAU_HINH.TAI_KHOAN_MAU || {};
+  const hop = $("#tb-mau");
+  if (!cfg.BAT || !hop || typeof hop.showModal !== "function") return;
+  $("#tb-mau-msv").textContent = cfg.MSSV;
+  $("#tb-mau-email").textContent = cfg.EMAIL;
+  let daDong = false;
+  try { daDong = sessionStorage.getItem("ea-tb-mau") === "1"; } catch (e) { /* không có bộ nhớ phiên */ }
+  const dong = () => { hop.close(); try { sessionStorage.setItem("ea-tb-mau", "1"); } catch (e) {} };
+  $$("[data-dong-mau]", hop).forEach((n) => n.addEventListener("click", dong));
+  hop.addEventListener("click", (e) => { if (e.target === hop) dong(); });  // bấm ra ngoài để đóng
+  hop.addEventListener("cancel", () => { try { sessionStorage.setItem("ea-tb-mau", "1"); } catch (e) {} });
+  $("#tb-mau-dung").addEventListener("click", () => {
+    dong();
+    $("#msv").value = cfg.MSSV;
+    $("#email").value = cfg.EMAIL;
+    xoaThongBao();
+    const oMa = $("#xac-nhan");
+    oMa.scrollIntoView({ behavior: GIAM_CHUYEN_DONG ? "auto" : "smooth", block: "center" });
+    setTimeout(() => oMa.focus({ preventScroll: true }), GIAM_CHUYEN_DONG ? 0 : 450);
+  });
+  if (!daDong) setTimeout(() => { if (!hop.open) hop.showModal(); }, GIAM_CHUYEN_DONG ? 0 : 1400);
+}
+
+/* ---------------------------------------------------------
    Khởi động
    --------------------------------------------------------- */
 khoiTaoLogo();
@@ -910,3 +945,4 @@ khoiTaoCuon();
 khoiTaoDenRoi();
 khoiTaoVideo();
 moManDau();
+khoiTaoTaiKhoanMau();
