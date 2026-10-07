@@ -931,7 +931,7 @@ function hienThongKe(tong) {
   const dinhDang = new Intl.NumberFormat("vi-VN");
   $$("[data-tk]", hop).forEach((o) => {
     const den = Math.max(0, Number(tong[o.dataset.tk]) || 0);
-    if (GIAM_CHUYEN_DONG) { o.textContent = dinhDang.format(den); return; }
+    if (GIAM_CHUYEN_DONG || document.hidden) { o.textContent = dinhDang.format(den); return; }
     const batDau = performance.now();
     const chay = (t) => {
       const k = Math.min(1, (t - batDau) / 1200);
