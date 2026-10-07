@@ -696,12 +696,19 @@ function banPhaoGiay() {
     no.push({ x, y, tre });
     for (let i = 0; i < soTia; i++) {
       const g = (i / soTia) * 6.283 + R(-0.06, 0.06), v = R(0.5, 1) * Math.min(W, H) * (nho ? 0.75 : 0.6);
-      lua.push({ tre, x, y, vx: Math.cos(g) * v, vy: Math.sin(g) * v, song: R(1.2, 1.9), c: chon(mauLua), nhay: R(0, 6.28) });
+      lua.push({ tre, x, y, vx: Math.cos(g) * v, vy: Math.sin(g) * v, song: R(1.7, 2.7), c: chon(mauLua), nhay: R(0, 6.28) });
     }
   }
-  phaoHoa(W * 0.25, H * 0.24, 0.25, nho ? 40 : 60);
-  phaoHoa(W * 0.75, H * 0.2, 0.6, nho ? 40 : 60);
-  phaoHoa(W * 0.5, H * 0.14, 1.0, nho ? 48 : 72);
+  // nhiều đợt pháo hoa nối tiếp nhau suốt ~9 giây; mỗi quả có vệt pháo bay lên trước khi nổ
+  const ten = [];
+  const lich = [[0.25, 0.25, 0.24], [0.6, 0.75, 0.2], [1.0, 0.5, 0.14],
+    [2.1, 0.18, 0.3], [2.5, 0.82, 0.26], [3.4, 0.4, 0.18], [3.8, 0.62, 0.22],
+    [4.9, 0.28, 0.2], [5.3, 0.72, 0.16], [6.3, 0.5, 0.24], [7.2, 0.2, 0.18], [7.6, 0.8, 0.22], [8.3, 0.5, 0.12]];
+  for (const [tre, fx, fy] of lich) {
+    const x = W * (fx + R(-0.04, 0.04)), y = H * (fy + R(-0.03, 0.03));
+    ten.push({ x, y, tre });
+    phaoHoa(x, y, tre, (nho ? 34 : 52) + ((Math.random() * 12) | 0));
+  }
 
   // mưa giấy rơi từ trên xuống sau cao trào
   for (let i = 0; i < (nho ? 50 : 90); i++) taoHat(R(1.1, 2.3), R(0, W), R(-60, -10), R(-40, 40), R(40, 120));
@@ -710,7 +717,7 @@ function banPhaoGiay() {
   const dungVideo = video.player && video.dangChay && video.player.pauseVideo;
   if (dungVideo) { try { video.player.pauseVideo(); } catch (e) { /* bỏ qua */ } }
 
-  const TONG = 6, MO_DAN = 1.4;
+  const TONG = 11, MO_DAN = 1.6;
   let truoc = performance.now();
   const batDau = truoc;
   const ve = (t) => {
@@ -729,9 +736,19 @@ function banPhaoGiay() {
       ctx.fillStyle = "#FFE7B0";
       ctx.beginPath(); ctx.arc(n.x, n.y, 20 + k * 180, 0, 6.283); ctx.fill();
     }
+    // vệt pháo bay lên trước khi nổ
+    ctx.lineCap = "round";
+    for (const r of ten) {
+      const k = (troi - (r.tre - 0.55)) / 0.55;
+      if (k < 0 || k > 1) continue;
+      const e = 1 - Math.pow(1 - k, 2), y = H + (r.y - H) * e, yDuoi = H + (r.y - H) * Math.max(0, e - 0.18);
+      ctx.globalAlpha = 0.85 * mo; ctx.strokeStyle = "#FFE2A8"; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(r.x, yDuoi); ctx.lineTo(r.x, y); ctx.stroke();
+      ctx.fillStyle = "#FFFFFF"; ctx.beginPath(); ctx.arc(r.x, y, 2.6, 0, 6.283); ctx.fill();
+    }
     // tia lửa: mỗi tia một đoạn thẳng ngắn
     ctx.lineCap = "round"; ctx.lineWidth = nho ? 2.2 : 2.6;
-    const cL = Math.pow(0.1, dt), gL = H * 0.2 * dt;
+    const cL = Math.pow(0.16, dt), gL = H * 0.14 * dt;
     for (const l of lua) {
       const k = troi - l.tre;
       if (k < 0 || k > l.song) continue;
