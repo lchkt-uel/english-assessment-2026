@@ -860,3 +860,17 @@ html.js .ket-qua:not(.da-hien) .kq-the { opacity: 0; filter: blur(18px); transfo
   .tb-mau-nut { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .tb-mau[open] { animation: none; } }
+
+/* Bộ đếm lượt truy cập ở chân trang */
+.ct-thong-ke { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; width: fit-content; max-width: 100%;
+  margin: 26px auto 0; padding: 8px 16px; border-radius: 999px; font-size: .8rem; color: var(--chu-phu);
+  background: rgba(255, 255, 255, .7); border: 1px solid rgba(201, 162, 75, .35); }
+.ct-thong-ke[hidden] { display: none; }
+.ct-thong-ke b { color: var(--navy-sau); font-weight: 800; font-variant-numeric: tabular-nums; }
+.tk-cham { width: 8px; height: 8px; border-radius: 50%; background: #22A55B; box-shadow: 0 0 0 0 rgba(34, 165, 91, .5); animation: tk-nhip 2.2s ease-out infinite; }
+@keyframes tk-nhip { 70% { box-shadow: 0 0 0 7px rgba(34, 165, 91, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 165, 91, 0); } }
+@media (prefers-reduced-motion: reduce) { .tk-cham { animation: none; } }
+@media (max-width: 480px) {
+  .ct-thong-ke { border-radius: 18px; gap: 4px 14px; font-size: .78rem; }
+  .ct-thong-ke .ct-cham { display: none; }
+}

@@ -916,9 +916,31 @@ function demLuotXem() {
     if (!localStorage.getItem("ea-da-ghe")) { localStorage.setItem("ea-da-ghe", "1"); moi = "1"; }
     if (localStorage.getItem("ea-ngay-ghe") !== homNay) { localStorage.setItem("ea-ngay-ghe", homNay); ngay = "1"; }
   } catch (e) { /* trình duyệt chặn bộ nhớ: vẫn đếm lượt xem */ }
-  setTimeout(() => {
-    fetch(`${url}?ping=1&moi=${moi}&ngay=${ngay}`, { mode: "no-cors", keepalive: true }).catch(() => {});
+  setTimeout(async () => {
+    try {
+      const phanHoi = await fetch(`${url}?ping=1&moi=${moi}&ngay=${ngay}`);
+      const kq = await phanHoi.json();
+      if (kq && kq.tong) hienThongKe(kq.tong);
+    } catch (e) { /* không hiện bộ đếm nếu lỗi */ }
   }, 1500);
+}
+
+function hienThongKe(tong) {
+  const hop = $("#ct-thong-ke");
+  if (!hop) return;
+  const dinhDang = new Intl.NumberFormat("vi-VN");
+  $$("[data-tk]", hop).forEach((o) => {
+    const den = Math.max(0, Number(tong[o.dataset.tk]) || 0);
+    if (GIAM_CHUYEN_DONG) { o.textContent = dinhDang.format(den); return; }
+    const batDau = performance.now();
+    const chay = (t) => {
+      const k = Math.min(1, (t - batDau) / 1200);
+      o.textContent = dinhDang.format(Math.round(den * (1 - Math.pow(1 - k, 3))));
+      if (k < 1) requestAnimationFrame(chay);
+    };
+    requestAnimationFrame(chay);
+  });
+  hop.hidden = false;
 }
 
 /* ---------------------------------------------------------
