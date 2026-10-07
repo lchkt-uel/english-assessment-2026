@@ -850,9 +850,10 @@ function amThanhChucMung(lichNo, tongGiay) {
   const nen = boDemNhieu(c);
   const nen1 = c.createDynamicsCompressor();
   const tong = c.createGain();
-  tong.gain.value = amThanh.tat ? 0 : 0.55;
+  tong.gain.value = amThanh.tat ? 0 : 0.75;
   tong.connect(nen1); nen1.connect(c.destination);
   amThanh.tong = tong;
+  const hu = c.createGain(); hu.gain.value = 0.35; hu.connect(tong);   // hiệu ứng pháo nhỏ hơn, để nhạc nổi lên
 
   const nhieu = (t, dai, loc, tan, q, to, giam) => {
     const src = c.createBufferSource(); src.buffer = nen;
@@ -860,14 +861,14 @@ function amThanhChucMung(lichNo, tongGiay) {
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(to, t + 0.008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dai * (giam || 1));
-    src.connect(f); f.connect(g); g.connect(tong);
+    src.connect(f); f.connect(g); g.connect(hu);
     src.start(t, Math.random() * Math.max(0, 1.9 - dai), dai + 0.05);
   };
   const tram = (t, tu, den, dai, to) => {      // tiếng "bùm" trầm
     const o = c.createOscillator(), g = c.createGain();
     o.type = "sine"; o.frequency.setValueAtTime(tu, t); o.frequency.exponentialRampToValueAtTime(den, t + dai);
     g.gain.setValueAtTime(to, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
-    o.connect(g); g.connect(tong); o.start(t); o.stop(t + dai + 0.05);
+    o.connect(g); g.connect(hu); o.start(t); o.stop(t + dai + 0.05);
   };
   const vut = (t, dai) => {                    // tiếng pháo vút lên
     const o = c.createOscillator(), g = c.createGain();
@@ -876,7 +877,7 @@ function amThanhChucMung(lichNo, tongGiay) {
     o.frequency.exponentialRampToValueAtTime(1500 + Math.random() * 500, t + dai);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.06);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
-    o.connect(g); g.connect(tong); o.start(t); o.stop(t + dai + 0.05);
+    o.connect(g); g.connect(hu); o.start(t); o.stop(t + dai + 0.05);
     nhieu(t, dai, "highpass", 4000, 0.7, 0.03);
   };
 
@@ -897,7 +898,94 @@ function amThanhChucMung(lichNo, tongGiay) {
       nhieu(t0 + tre + 0.3 + Math.random() * 1.4, 0.03, "highpass", 3500 + Math.random() * 3000, 1, 0.12 + Math.random() * 0.12);
     }
   }
+  nhacChucMung(c, tong, t0, nhieu);
   nutAmThanh(tongGiay);
+}
+
+// Nhạc chúc mừng: giai điệu fanfare tự sáng tác (~10 giây), tổng hợp bằng Web Audio
+function nhacChucMung(c, ra, t0, nhieu) {
+  const nhip = 60 / 132;                                  // 132 BPM
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const bus = c.createGain(); bus.gain.value = 0.9; bus.connect(ra);
+  // vang nhẹ cho "sân khấu"
+  const tre = c.createDelay(); tre.delayTime.value = nhip * 0.75;
+  const phanHoi = c.createGain(); phanHoi.gain.value = 0.22;
+  const vang = c.createGain(); vang.gain.value = 0.18;
+  bus.connect(tre); tre.connect(phanHoi); phanHoi.connect(tre); tre.connect(vang); vang.connect(ra);
+
+  const kenDong = (t, m, dai, to) => {                     // kèn đồng: 2 sóng răng cưa lệch nhẹ qua lọc
+    const g = c.createGain(), f = c.createBiquadFilter();
+    f.type = "lowpass"; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(700, t); f.frequency.linearRampToValueAtTime(2600, t + 0.06);
+    f.frequency.exponentialRampToValueAtTime(1400, t + Math.max(0.1, dai));
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(to, t + 0.03);
+    g.gain.setValueAtTime(to * 0.8, t + Math.max(0.05, dai - 0.06));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dai + 0.18);
+    for (const lech of [-6, 6]) {
+      const o = c.createOscillator(); o.type = "sawtooth"; o.frequency.value = hz(m); o.detune.value = lech;
+      o.connect(f); o.start(t); o.stop(t + dai + 0.25);
+    }
+    f.connect(g); g.connect(bus);
+  };
+  const chuong = (t, m, to) => {                           // tiếng chuông lấp lánh
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(to, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + 1.3);
+  };
+  const hopAm = (t, nots, dai) => {                        // nền hòa âm êm
+    for (const m of nots) {
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "triangle"; o.frequency.value = hz(m);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.035, t + 0.12);
+      g.gain.setValueAtTime(0.03, t + dai - 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + dai + 0.4);
+      o.connect(g); g.connect(bus); o.start(t); o.stop(t + dai + 0.5);
+    }
+  };
+  const tram = (t, m, dai) => {                            // bass
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "triangle"; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + dai + 0.05);
+  };
+  const trongCai = (t) => {                                // trống cái
+    const o = c.createOscillator(), g = c.createGain();
+    o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.32);
+  };
+  const B = (n) => t0 + n * nhip;
+
+  // giai điệu: [nhịp bắt đầu, độ dài (nhịp), nốt MIDI]
+  const giaiDieu = [[0, 1 / 3, 67], [1 / 3, 1 / 3, 67], [2 / 3, 1 / 3, 67],
+    [1, 1.5, 72], [2.5, 0.5, 76], [3, 1, 79], [4, 1, 76],
+    [5, 1.5, 77], [6.5, 0.5, 76], [7, 1, 74], [8, 1, 72],
+    [9, 1, 69], [10, 1, 72], [11, 1, 77], [12, 1, 76],
+    [13, 1.5, 74], [14.5, 0.5, 72], [15, 0.5, 74], [15.5, 0.5, 76], [16, 1, 79],
+    [17, 3.5, 84]];
+  for (const [n, d, m] of giaiDieu) {
+    kenDong(B(n), m, d * nhip, 0.11);
+    kenDong(B(n), m - 12, d * nhip, 0.05);
+    chuong(B(n), m + 12, 0.025);
+  }
+  // hòa âm: C – F – Am F – G G7 – C
+  const vong = [[1, 4, [60, 64, 67], 48], [5, 4, [57, 60, 65], 41], [9, 2, [57, 60, 64], 45], [11, 2, [57, 60, 65], 41],
+    [13, 2, [55, 59, 62], 43], [15, 2, [55, 59, 65], 43], [17, 3.5, [60, 64, 67, 72], 36]];
+  for (const [n, d, nots, bass] of vong) {
+    hopAm(B(n), nots, d * nhip);
+    for (let k = 0; k < Math.min(d, 3); k++) tram(B(n + k), bass + (k % 2 ? 12 : 0), nhip * 0.9);
+  }
+  // nhịp trống: trống cái 1–3, trống lẫy 2–4, chũm chọe nhỏ móc đơn
+  for (let n = 0; n < 1; n += 1 / 6) nhieu(B(n), 0.06, "bandpass", 1900, 0.8, 0.12 + n * 0.25);   // dồn trống mở đầu
+  for (let o = 1; o < 17; o += 4) {
+    trongCai(B(o)); trongCai(B(o + 2));
+    nhieu(B(o + 1), 0.16, "bandpass", 1900, 0.8, 0.35); nhieu(B(o + 3), 0.16, "bandpass", 1900, 0.8, 0.35);
+    for (let h = 0; h < 4; h += 0.5) nhieu(B(o + h), 0.04, "highpass", 7500, 0.7, h % 1 ? 0.06 : 0.1);
+  }
+  // kết: trống cái + chũm chọe lớn ngân dài
+  trongCai(B(17));
+  nhieu(B(17), 2.4, "highpass", 4500, 0.5, 0.32);
+  nhieu(B(16.5), 0.12, "bandpass", 1900, 0.8, 0.3);
 }
 
 // Nút nhỏ bật/tắt âm thanh, chỉ hiện trong lúc chúc mừng
@@ -910,12 +998,12 @@ function nutAmThanh(giay) {
     nut.addEventListener("click", () => {
       amThanh.tat = !amThanh.tat;
       try { localStorage.setItem("ea-tat-am", amThanh.tat ? "1" : "0"); } catch (e) { /* bỏ qua */ }
-      if (amThanh.tong && amThanh.ctx) amThanh.tong.gain.setTargetAtTime(amThanh.tat ? 0 : 0.55, amThanh.ctx.currentTime, 0.05);
+      if (amThanh.tong && amThanh.ctx) amThanh.tong.gain.setTargetAtTime(amThanh.tat ? 0 : 0.75, amThanh.ctx.currentTime, 0.05);
       veNut();
     });
   }
   const veNut = () => {
-    nut.textContent = amThanh.tat ? "🔇 Bật âm thanh" : "🔊 Tắt âm thanh";
+    nut.textContent = amThanh.tat ? "🔇 Bật nhạc" : "🎵 Tắt nhạc";
     nut.setAttribute("aria-pressed", String(!amThanh.tat));
   };
   veNut();
