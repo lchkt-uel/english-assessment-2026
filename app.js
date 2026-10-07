@@ -378,6 +378,7 @@ function datDangTai(dangTai) {
 
 async function xuLyGui(e) {
   e.preventDefault();
+  moKhoaAmThanh();   // trình duyệt chỉ cho phát âm thanh sau thao tác của người dùng
   xoaThongBao();
   const oMsv = $("#msv"), oEmail = $("#email"), oXn = $("#xac-nhan");
   const msv = chuanHoaMsv(oMsv.value), email = chuanHoaEmail(oEmail.value), xn = chuanHoaMsv(oXn.value);
@@ -650,6 +651,7 @@ function khoiTaoKetQua() {
    --------------------------------------------------------- */
 function banPhaoGiay() {
   if (GIAM_CHUYEN_DONG) return;
+  const TONG_AM = 11;
   const cv = $("#phao-giay");
   const ctx = cv.getContext("2d");
   const W = innerWidth, H = innerHeight, nho = W < 600;
@@ -709,6 +711,7 @@ function banPhaoGiay() {
     ten.push({ x, y, tre });
     phaoHoa(x, y, tre, (nho ? 34 : 52) + ((Math.random() * 12) | 0));
   }
+  amThanhChucMung(lich.map((l) => l[0]), TONG_AM);
 
   // mưa giấy rơi từ trên xuống sau cao trào
   for (let i = 0; i < (nho ? 50 : 90); i++) taoHat(R(1.1, 2.3), R(0, W), R(-60, -10), R(-40, 40), R(40, 120));
@@ -816,6 +819,109 @@ function banPhaoGiay() {
     }
   };
   requestAnimationFrame(ve);
+}
+
+/* ---------------------------------------------------------
+   8b. Âm thanh chúc mừng — tự tổng hợp bằng Web Audio (không dùng file nhạc, không bản quyền)
+   --------------------------------------------------------- */
+const amThanh = { ctx: null, nhieu: null, tong: null, tat: false };
+try { amThanh.tat = localStorage.getItem("ea-tat-am") === "1"; } catch (e) { /* bỏ qua */ }
+
+function moKhoaAmThanh() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!amThanh.ctx) amThanh.ctx = new AC();
+    if (amThanh.ctx.state === "suspended") amThanh.ctx.resume();
+  } catch (e) { /* trình duyệt không hỗ trợ: im lặng */ }
+}
+
+function boDemNhieu(c) {
+  if (amThanh.nhieu) return amThanh.nhieu;
+  const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return (amThanh.nhieu = b);
+}
+
+function amThanhChucMung(lichNo, tongGiay) {
+  const c = amThanh.ctx;
+  if (!c || c.state !== "running") return;
+  const t0 = c.currentTime + 0.05;
+  const nen = boDemNhieu(c);
+  const nen1 = c.createDynamicsCompressor();
+  const tong = c.createGain();
+  tong.gain.value = amThanh.tat ? 0 : 0.55;
+  tong.connect(nen1); nen1.connect(c.destination);
+  amThanh.tong = tong;
+
+  const nhieu = (t, dai, loc, tan, q, to, giam) => {
+    const src = c.createBufferSource(); src.buffer = nen;
+    const f = c.createBiquadFilter(); f.type = loc; f.frequency.value = tan; f.Q.value = q;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(to, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dai * (giam || 1));
+    src.connect(f); f.connect(g); g.connect(tong);
+    src.start(t, Math.random() * Math.max(0, 1.9 - dai), dai + 0.05);
+  };
+  const tram = (t, tu, den, dai, to) => {      // tiếng "bùm" trầm
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(tu, t); o.frequency.exponentialRampToValueAtTime(den, t + dai);
+    g.gain.setValueAtTime(to, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
+    o.connect(g); g.connect(tong); o.start(t); o.stop(t + dai + 0.05);
+  };
+  const vut = (t, dai) => {                    // tiếng pháo vút lên
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(520 + Math.random() * 120, t);
+    o.frequency.exponentialRampToValueAtTime(1500 + Math.random() * 500, t + dai);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
+    o.connect(g); g.connect(tong); o.start(t); o.stop(t + dai + 0.05);
+    nhieu(t, dai, "highpass", 4000, 0.7, 0.03);
+  };
+
+  // pháo giấy: tiếng "bụp" khi nòng bắn (khớp với 3 đợt bắn)
+  for (const t of [0, 0.28, 0.55]) {
+    nhieu(t0 + t, 0.18, "bandpass", 1300, 0.9, 0.9);
+    tram(t0 + t, 160, 55, 0.22, 0.5);
+    nhieu(t0 + t + 0.05, 0.6, "highpass", 5000, 0.5, 0.08);   // tiếng giấy sột soạt
+  }
+  // pháo hoa: vút lên → nổ → lách tách
+  for (const tre of lichNo) {
+    const tVut = Math.max(0, tre - 0.55);
+    vut(t0 + tVut, tre - tVut);
+    const to = 0.7 + Math.random() * 0.3;
+    nhieu(t0 + tre, 1.1, "lowpass", 900, 0.8, to);
+    tram(t0 + tre, 110, 38, 0.6, 0.55 * to);
+    for (let k = 0; k < 18; k++) {
+      nhieu(t0 + tre + 0.3 + Math.random() * 1.4, 0.03, "highpass", 3500 + Math.random() * 3000, 1, 0.12 + Math.random() * 0.12);
+    }
+  }
+  nutAmThanh(tongGiay);
+}
+
+// Nút nhỏ bật/tắt âm thanh, chỉ hiện trong lúc chúc mừng
+function nutAmThanh(giay) {
+  let nut = $("#nut-am-thanh");
+  if (!nut) {
+    nut = document.createElement("button");
+    nut.type = "button"; nut.id = "nut-am-thanh"; nut.className = "nut-am-thanh";
+    document.body.appendChild(nut);
+    nut.addEventListener("click", () => {
+      amThanh.tat = !amThanh.tat;
+      try { localStorage.setItem("ea-tat-am", amThanh.tat ? "1" : "0"); } catch (e) { /* bỏ qua */ }
+      if (amThanh.tong && amThanh.ctx) amThanh.tong.gain.setTargetAtTime(amThanh.tat ? 0 : 0.55, amThanh.ctx.currentTime, 0.05);
+      veNut();
+    });
+  }
+  const veNut = () => {
+    nut.textContent = amThanh.tat ? "🔇 Bật âm thanh" : "🔊 Tắt âm thanh";
+    nut.setAttribute("aria-pressed", String(!amThanh.tat));
+  };
+  veNut();
+  nut.hidden = false;
+  clearTimeout(nutAmThanh.hen);
+  nutAmThanh.hen = setTimeout(() => { nut.hidden = true; }, giay * 1000);
 }
 
 /* ---------------------------------------------------------

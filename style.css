@@ -874,3 +874,11 @@ html.js .ket-qua:not(.da-hien) .kq-the { opacity: 0; filter: blur(18px); transfo
   .ct-thong-ke { border-radius: 18px; gap: 4px 14px; font-size: .78rem; }
   .ct-thong-ke .ct-cham { display: none; }
 }
+
+/* Nút bật/tắt âm thanh chúc mừng */
+.nut-am-thanh { position: fixed; left: 16px; bottom: 16px; z-index: 60; padding: 10px 16px; border: 0; border-radius: 999px;
+  font: 700 .82rem var(--font); color: var(--navy-sau); background: rgba(255, 255, 255, .92); cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(201, 162, 75, .5); animation: tb-hien .4s ease; }
+.nut-am-thanh[hidden] { display: none; }
+.nut-am-thanh:focus-visible { outline: 3px solid var(--cam); outline-offset: 2px; }
+@media print { .nut-am-thanh { display: none !important; } }
