@@ -38,7 +38,7 @@ const CAU_HINH = {
   // Thông báo "chưa có điểm" khi mở trang + tài khoản mẫu để trải nghiệm.
   // Khi đã công bố điểm thật: đổi BAT thành false (và xóa dòng mẫu trong Google Sheet).
   TAI_KHOAN_MAU: {
-    BAT: true,
+    BAT: false,
     MSSV: "K244000000",
     EMAIL: "anvnk26400a@st.uel.edu.vn",
   },
